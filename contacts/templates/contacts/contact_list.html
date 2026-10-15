@@ -5,6 +5,22 @@
 {% block content %}
     <h1>Lista kontaktów</h1>
 
+    <form method="get" action="{% url 'contacts:contact_list' %}" class="mb-3">
+        <label for="contact-search" class="form-label">Szukaj kontaktu</label>
+        <div class="d-flex gap-2">
+            <input type="search"
+                   id="contact-search"
+                   name="q"
+                   value="{{ search_query }}"
+                   placeholder="Imię, nazwisko, telefon lub email"
+                   class="form-control">
+            <button type="submit" class="btn btn-primary">Szukaj</button>
+            {% if search_query %}
+                <a href="{% url 'contacts:contact_list' %}" class="btn btn-outline-secondary">Wyczyść</a>
+            {% endif %}
+        </div>
+    </form>
+
     {% if contacts %}
         <div class="table-responsive">
             <table class="table" aria-label="Lista kontaktów">
@@ -35,6 +51,10 @@
             </table>
         </div>
     {% else %}
-        <p>Brak kontaktów do wyświetlenia.</p>
+        {% if search_query %}
+            <p>Nie znaleziono kontaktów dla podanej frazy.</p>
+        {% else %}
+            <p>Brak kontaktów do wyświetlenia.</p>
+        {% endif %}
     {% endif %}
 {% endblock %}

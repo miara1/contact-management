@@ -25,7 +25,7 @@
 
     {% if contacts %}
         <div class="table-responsive">
-            <table class="table" aria-label="Lista kontaktów">
+            <table class="table align-middle" aria-label="Lista kontaktów">
                 <thead>
                     <tr>
                         <th scope="col">Imię</th>
@@ -35,6 +35,7 @@
                         <th scope="col">Miasto</th>
                         <th scope="col">Status</th>
                         <th scope="col">Data dodania</th>
+                        <th scope="col">Akcje</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,6 +48,12 @@
                             <td>{{ contact.city }}</td>
                             <td>{{ contact.status }}</td>
                             <td>{{ contact.created_at|date:'d.m.Y' }}</td>
+                            <td>
+                                <div class="d-flex flex-column small lh-1">
+                                    <a href="{% url 'contacts:contact_update' contact.pk %}">Edytuj</a>
+                                    <a href="{% url 'contacts:contact_delete' contact.pk %}" class="text-danger">Usuń</a>
+                                </div>
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>

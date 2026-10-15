@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}Dodaj kontakt | Kontakty{% endblock %}
+{% block title %}{{ form_title }} | Kontakty{% endblock %}
 
 {% block content %}
-    <h1>Dodaj kontakt</h1>
+    <h1>{{ form_title }}</h1>
 
-    <form method="post" action="{% url 'contacts:contact_create' %}">
+    {# Submit to the current URL so creation and editing can share this template. #}
+    <form method="post">
         {% csrf_token %}
 
         {% if form.non_field_errors %}

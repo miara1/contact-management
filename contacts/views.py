@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from .forms import ContactForm
 from .models import Contact
@@ -39,5 +39,23 @@ class ContactListView(ListView):
 class ContactCreateView(CreateView):
     form_class = ContactForm
     template_name = 'contacts/contact_form.html'
+    extra_context = {'form_title': 'Dodaj kontakt'}
     # Defer URL resolution until the project's URL configuration is loaded.
     success_url = reverse_lazy('contacts:contact_list')
+
+
+class ContactUpdateView(UpdateView):
+    model = Contact
+    form_class = ContactForm
+    template_name = 'contacts/contact_form.html'
+    extra_context = {'form_title': 'Edytuj kontakt'}
+    success_url = reverse_lazy('contacts:contact_list')
+
+
+class ContactDeleteView(DeleteView):
+    model = Contact
+    template_name = 'contacts/contact_confirm_delete.html'
+    context_object_name = 'contact'
+    success_url = reverse_lazy('contacts:contact_list')
+    # Disable HTTP DELETE; deletion must use the confirmation form's POST.
+    http_method_names = ['get', 'post', 'head', 'options']

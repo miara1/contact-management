@@ -5,6 +5,8 @@
 {% block content %}
     <h1>Lista kontaktów</h1>
 
+    <a href="{% url 'contacts:contact_create' %}" class="btn btn-primary mb-3">Dodaj kontakt</a>
+
     <form method="get" action="{% url 'contacts:contact_list' %}" class="mb-3">
         <label for="contact-search" class="form-label">Szukaj kontaktu</label>
         <div class="d-flex gap-2">

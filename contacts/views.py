@@ -1,6 +1,8 @@
 from django.db.models import Q
-from django.views.generic import ListView
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, ListView
 
+from .forms import ContactForm
 from .models import Contact
 
 
@@ -32,3 +34,10 @@ class ContactListView(ListView):
         context = super().get_context_data(**kwargs)
         context['search_query'] = self.request.GET.get('q', '').strip()
         return context
+
+
+class ContactCreateView(CreateView):
+    form_class = ContactForm
+    template_name = 'contacts/contact_form.html'
+    # Defer URL resolution until the project's URL configuration is loaded.
+    success_url = reverse_lazy('contacts:contact_list')

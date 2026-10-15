@@ -22,9 +22,11 @@ class ContactStatus(models.Model):
 class Contact(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    # Preserve leading zeros and the '+' prefix in phone numbers.
     phone_number = models.CharField(max_length=32, unique=True)
     email = models.EmailField(unique=True)
     city = models.CharField(max_length=100)
+    # Prevent deleting a status while it is assigned to any contact.
     status = models.ForeignKey(
         ContactStatus,
         on_delete=models.PROTECT,

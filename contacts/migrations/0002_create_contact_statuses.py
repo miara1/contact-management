@@ -15,6 +15,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Preserve statuses on rollback because existing contacts may use them.
         migrations.RunPython(create_contact_statuses, migrations.RunPython.noop),
     ]

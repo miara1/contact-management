@@ -22,6 +22,7 @@ class ContactAdmin(admin.ModelAdmin):
 
     @admin.display(description='Date added', ordering='created_at')
     def formatted_created_at(self, obj):
+        # The add form has no creation date until the contact is saved.
         if obj.created_at is None:
             return None
         return obj.created_at.strftime('%d.%m.%Y')

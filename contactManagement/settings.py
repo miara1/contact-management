@@ -65,7 +65,8 @@ ROOT_URLCONF = 'contactManagement.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # Shared layouts live here; APP_DIRS finds app-specific templates.
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

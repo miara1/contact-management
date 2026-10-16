@@ -10,10 +10,27 @@ class ContactListView(ListView):
     template_name = 'contacts/contact_list.html'
     context_object_name = 'contacts'
     # Fetch statuses in the same query to avoid one extra query per contact.
-    # Use the primary key to keep ordering stable when names are identical.
-    queryset = Contact.objects.select_related('status').order_by(
-        'last_name', 'first_name', 'pk'
-    )
+    queryset = Contact.objects.select_related('status')
+    sort_options = {
+        'last_name': 'Nazwisko: A–Z',
+        '-last_name': 'Nazwisko: Z–A',
+        'created_at': 'Data dodania: od najstarszych',
+        '-created_at': 'Data dodania: od najnowszych',
+    }
+
+    def get_sort(self):
+        sort = self.request.GET.get('sort', 'last_name')
+        # Restrict URL input to supported options before using it for ordering.
+        return sort if sort in self.sort_options else 'last_name'
+
+    def get_ordering(self):
+        sort = self.get_sort()
+        # Use IDs to order contacts added on the same day in the chosen direction.
+        if sort == '-created_at':
+            return (sort, '-pk')
+        if sort == 'created_at':
+            return (sort, 'pk')
+        return (sort, 'first_name', 'pk')
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -33,6 +50,8 @@ class ContactListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search_query'] = self.request.GET.get('q', '').strip()
+        context['sort_options'] = self.sort_options
+        context['selected_sort'] = self.get_sort()
         return context
 
 

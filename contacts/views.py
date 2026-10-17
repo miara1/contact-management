@@ -1,8 +1,14 @@
+from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from .forms import ContactForm
+from .csv_import import create_csv_template, import_contacts
+from .forms import ContactForm, ContactImportForm
 from .models import Contact
 
 
@@ -52,6 +58,9 @@ class ContactListView(ListView):
         context['search_query'] = self.request.GET.get('q', '').strip()
         context['sort_options'] = self.sort_options
         context['selected_sort'] = self.get_sort()
+        context['import_form'] = ContactImportForm()
+        # Consume the report once after redirecting, avoiding repeated POST uploads.
+        context['import_result'] = self.request.session.pop('contact_import_result', None)
         return context
 
 
@@ -78,3 +87,31 @@ class ContactDeleteView(DeleteView):
     success_url = reverse_lazy('contacts:contact_list')
     # Disable HTTP DELETE; deletion must use the confirmation form's POST.
     http_method_names = ['get', 'post', 'head', 'options']
+
+
+class ContactImportView(View):
+    def post(self, request):
+        form = ContactImportForm(request.POST, request.FILES)
+        if not form.is_valid():
+            for error in form.errors['csv_file']:
+                messages.error(request, error)
+            return redirect('contacts:contact_list')
+
+        try:
+            result = import_contacts(form.cleaned_data['csv_file'])
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            request.session['contact_import_result'] = result
+
+        return redirect('contacts:contact_list')
+
+
+class ContactCSVTemplateView(View):
+    def get(self, request):
+        return HttpResponse(
+            create_csv_template(),
+            content_type='text/csv; charset=utf-8',
+            headers={'Content-Disposition': 'attachment; filename="contacts_template.csv"'},
+        )

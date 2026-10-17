@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from .forms import ContactForm
 from .models import Contact, ContactStatus
 
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
+    form = ContactForm
     list_display = (
         'first_name',
         'last_name',

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ form_title }} | Kontakty{% endblock %}
 
@@ -6,7 +7,7 @@
     <h1>{{ form_title }}</h1>
 
     {# Submit to the current URL so creation and editing can share this template. #}
-    <form method="post">
+    <form method="post" data-contact-form>
         {% csrf_token %}
 
         {% if form.non_field_errors %}
@@ -17,6 +18,9 @@
             <div class="mb-3">
                 {{ field.label_tag }}
                 {{ field }}
+                {% if field.help_text %}
+                    <div id="{{ field.auto_id }}_helptext" class="form-text">{{ field.help_text }}</div>
+                {% endif %}
                 {% if field.errors %}
                     <div class="text-danger">{{ field.errors }}</div>
                 {% endif %}
@@ -26,4 +30,12 @@
         <button type="submit" class="btn btn-primary">Zapisz</button>
         <a href="{% url 'contacts:contact_list' %}" class="btn btn-outline-secondary">Anuluj</a>
     </form>
+{% endblock %}
+
+{% block scripts %}
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.7/bundle/libphonenumber-max.js"
+            integrity="sha384-zecwWagrCwu++wQXduZuxVjAXywAPjDYK2ZwjHGxUMLfyFVKowNYR6fPLjYoMCKf"
+            crossorigin="anonymous"></script>
+    <script defer src="{% static 'contacts/js/contact_form.js' %}"></script>
 {% endblock %}

@@ -1,11 +1,48 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Lista kontaktów | Kontakty{% endblock %}
 
 {% block content %}
     <h1>Lista kontaktów</h1>
 
-    <a href="{% url 'contacts:contact_create' %}" class="btn btn-primary mb-3">Dodaj kontakt</a>
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <a href="{% url 'contacts:contact_create' %}" class="btn btn-primary">Dodaj kontakt</a>
+        <form method="post"
+              action="{% url 'contacts:contact_import' %}"
+              enctype="multipart/form-data"
+              id="contact-import-form"
+              class="d-inline-flex flex-wrap align-items-center gap-2">
+            {% csrf_token %}
+            <label for="{{ import_form.csv_file.id_for_label }}" class="visually-hidden">Plik CSV</label>
+            {{ import_form.csv_file }}
+            <button type="submit" id="contact-import-button" class="btn btn-outline-primary">Importuj CSV</button>
+        </form>
+        <a href="{% url 'contacts:contact_csv_template' %}">Pobierz wzór CSV</a>
+    </div>
+
+    <details class="mb-3">
+        <summary>Format pliku CSV</summary>
+        <p>Użyj UTF-8 i separatora średnik lub przecinek. Wszystkie pola są wymagane.</p>
+        <p>Nagłówki: <code>first_name;last_name;phone_number;email;city;status</code>. Kolejność kolumn jest dowolna.</p>
+        <p>Status: nowy, w trakcie, zagubiony lub nieaktualny. Numery bez prefiksu kraju traktujemy jako polskie (+48).</p>
+        <p>W Excelu ustaw kolumnę telefonu jako tekst. Wiersze instrukcji zaczynające się od # mogą znajdować się przed nagłówkami.</p>
+        <p>Poprawne kontakty zostaną dodane. Wpisy niepełne, nieprawidłowe i duplikaty zostaną pominięte z opisem błędu. Istniejące kontakty pozostaną bez zmian.</p>
+    </details>
+
+    {% if import_result %}
+        <section aria-labelledby="import-result-heading" class="mb-3">
+            <h2 id="import-result-heading" class="h5">Wynik importu</h2>
+            <p>Zaimportowano: {{ import_result.imported_count }}. Pominięto: {{ import_result.skipped_count }}.</p>
+            {% if import_result.errors %}
+                <ul>
+                    {% for error in import_result.errors %}
+                        <li>Wiersz {{ error.row_number }}: {{ error.messages|join:'; ' }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    {% endif %}
 
     <form method="get" action="{% url 'contacts:contact_list' %}" class="mb-3">
         <div class="row g-2 align-items-end">
@@ -78,4 +115,8 @@
             <p>Brak kontaktów do wyświetlenia.</p>
         {% endif %}
     {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script defer src="{% static 'contacts/js/contact_import.js' %}"></script>
 {% endblock %}

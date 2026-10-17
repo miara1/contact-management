@@ -1,6 +1,8 @@
 from django import forms
+from django.core.validators import FileExtensionValidator
 
 from .models import Contact
+from .phone_numbers import normalize_phone_number
 
 
 class ContactForm(forms.ModelForm):
@@ -23,6 +25,16 @@ class ContactForm(forms.ModelForm):
             'city': 'Miasto',
             'status': 'Status',
         }
+        widgets = {
+            'phone_number': forms.TextInput(attrs={'type': 'tel', 'autocomplete': 'tel'}),
+        }
+        help_texts = {
+            'phone_number': 'Bez prefiksu kraju przyjmujemy +48. Numery zagraniczne podaj z + lub 00.',
+        }
+        error_messages = {
+            'phone_number': {'unique': 'Kontakt z takim numerem telefonu już istnieje.'},
+            'email': {'unique': 'Kontakt z takim adresem email już istnieje.'},
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,3 +43,22 @@ class ContactForm(forms.ModelForm):
             field.widget.attrs['class'] = (
                 'form-select' if isinstance(field.widget, forms.Select) else 'form-control'
             )
+
+    def clean_phone_number(self):
+        # Field cleaning runs before ModelForm checks uniqueness against the database.
+        return normalize_phone_number(self.cleaned_data['phone_number'])
+
+
+class ContactImportForm(forms.Form):
+    csv_file = forms.FileField(
+        label='Plik CSV',
+        validators=[FileExtensionValidator(
+            allowed_extensions=['csv'],
+            message='Wybierz plik z rozszerzeniem .csv.',
+        )],
+        error_messages={'required': 'Wybierz plik CSV do importu.'},
+        widget=forms.ClearableFileInput(attrs={
+            'accept': '.csv,text/csv',
+            'class': 'form-control',
+        }),
+    )

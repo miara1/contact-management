@@ -117,6 +117,7 @@ def create_csv_template():
         'Bez prefiksu kraju przyjmujemy +48. '
         'Status: nowy / w trakcie / zagubiony / nieaktualny.\r\n'
     )
+    content.write('# Polskie numery alarmowe, np. 112 i 997, podaj bez prefiksu kraju.\r\n')
     writer = csv.writer(content, delimiter=';', lineterminator='\r\n')
     writer.writerow(CSV_HEADERS)
     writer.writerow(('Jan', 'Kowalski', '+48500100200', 'jan.kowalski@example.com', 'Warszawa', 'nowy'))

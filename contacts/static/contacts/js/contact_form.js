@@ -5,7 +5,10 @@ const phoneInput = contactForm?.querySelector('[name="phone_number"]');
 
 // Django still validates submissions when JavaScript or the library is unavailable.
 if (phoneInput && window.libphonenumber) {
-    const phoneError = 'Podaj prawidłowy numer telefonu, np. +48500100200.';
+    const phoneError = 'Podaj prawidłowy numer telefonu lub polski numer alarmowy, np. 112.';
+    const polishEmergencyNumbers = new Set(
+        (phoneInput.dataset.polishEmergencyNumbers || '').split(' ')
+    );
 
     function validatePhoneNumber() {
         phoneInput.setCustomValidity('');
@@ -18,6 +21,13 @@ if (phoneInput && window.libphonenumber) {
             phoneInput.setCustomValidity(phoneError);
             return;
         }
+
+        // Only Polish emergency short codes supplied by Django bypass international validation.
+        if (polishEmergencyNumbers.has(value)) {
+            phoneInput.value = value;
+            return;
+        }
+
         if (value.startsWith('00')) {
             value = '+' + value.slice(2);
         }

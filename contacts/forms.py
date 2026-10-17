@@ -2,7 +2,7 @@ from django import forms
 from django.core.validators import FileExtensionValidator
 
 from .models import Contact
-from .phone_numbers import normalize_phone_number
+from .phone_numbers import POLISH_EMERGENCY_NUMBERS, normalize_phone_number
 
 
 class ContactForm(forms.ModelForm):
@@ -26,10 +26,18 @@ class ContactForm(forms.ModelForm):
             'status': 'Status',
         }
         widgets = {
-            'phone_number': forms.TextInput(attrs={'type': 'tel', 'autocomplete': 'tel'}),
+            'phone_number': forms.TextInput(attrs={
+                'type': 'tel',
+                'autocomplete': 'tel',
+                'data-polish-emergency-numbers': ' '.join(POLISH_EMERGENCY_NUMBERS),
+            }),
         }
         help_texts = {
-            'phone_number': 'Bez prefiksu kraju przyjmujemy +48. Numery zagraniczne podaj z + lub 00.',
+            'phone_number': (
+                'Polskie numery alarmowe, np. 112 i 997, podaj bez prefiksu kraju. '
+                'Dla pozostałych numerów bez prefiksu przyjmujemy +48. '
+                'Numery zagraniczne podaj z + lub 00.'
+            ),
         }
         error_messages = {
             'phone_number': {'unique': 'Kontakt z takim numerem telefonu już istnieje.'},

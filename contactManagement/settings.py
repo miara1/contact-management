@@ -129,6 +129,27 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
+# File storage and a shared lock keep API limits consistent across local processes.
+CACHES = {
+    'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'},
+    'weather': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / '.cache' / 'weather',
+        'OPTIONS': {'MAX_ENTRIES': 10000},
+    },
+}
+WEATHER_LOCK_PATH = BASE_DIR / '.cache' / 'weather-api.lock'
+WEATHER_USER_AGENT = os.getenv(
+    'WEATHER_USER_AGENT', 'ContactManagement/1.0 (Django contact manager)',
+)
+WEATHER_GEOCODING_URL = os.getenv(
+    'WEATHER_GEOCODING_URL', 'https://nominatim.openstreetmap.org/search',
+)
+WEATHER_FORECAST_URL = os.getenv(
+    'WEATHER_FORECAST_URL', 'https://api.open-meteo.com/v1/forecast',
+)
+
+
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 

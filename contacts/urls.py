@@ -7,6 +7,7 @@ from .views import (
     ContactImportView,
     ContactListView,
     ContactUpdateView,
+    ContactWeatherView,
 )
 
 app_name = 'contacts'
@@ -14,6 +15,7 @@ app_name = 'contacts'
 urlpatterns = [
     path('', ContactListView.as_view(), name='contact_list'),
     path('contacts/add/', ContactCreateView.as_view(), name='contact_create'),
+    path('contacts/weather/', ContactWeatherView.as_view(), name='contact_weather'),
     path('contacts/import/', ContactImportView.as_view(), name='contact_import'),
     path('contacts/template.csv', ContactCSVTemplateView.as_view(), name='contact_csv_template'),
     path('contacts/<int:pk>/edit/', ContactUpdateView.as_view(), name='contact_update'),

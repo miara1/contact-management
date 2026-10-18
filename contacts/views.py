@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -10,6 +10,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from .csv_import import create_csv_template, import_contacts
 from .forms import ContactForm, ContactImportForm
 from .models import Contact
+from .weather import get_city_weather
 
 
 class ContactListView(ListView):
@@ -62,6 +63,22 @@ class ContactListView(ListView):
         # Consume the report once after redirecting, avoiding repeated POST uploads.
         context['import_result'] = self.request.session.pop('contact_import_result', None)
         return context
+
+
+class ContactWeatherView(View):
+    def get(self, request):
+        cities = list(dict.fromkeys(request.GET.getlist('city')))
+        if not cities or len(cities) > 3 or any(not city.strip() or len(city) > 100 for city in cities):
+            return JsonResponse({'error': 'Podaj od 1 do 3 miast.'}, status=400)
+
+        # Only cities from existing contacts may trigger external API requests.
+        known_cities = set(Contact.objects.filter(city__in=cities).values_list('city', flat=True))
+        if any(city not in known_cities for city in cities):
+            return JsonResponse({'error': 'Miasto nie występuje na liście kontaktów.'}, status=400)
+
+        return JsonResponse(
+            {'cities': get_city_weather(cities)}, headers={'Cache-Control': 'no-store'},
+        )
 
 
 class ContactCreateView(CreateView):

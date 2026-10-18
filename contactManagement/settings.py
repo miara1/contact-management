@@ -22,6 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Environment variables take precedence over local .env values.
 load_dotenv(BASE_DIR / '.env')
 
+# Docker stores writable data in a persistent volume; local paths stay unchanged.
+DATA_DIR = Path(os.getenv('DJANGO_DATA_DIR', BASE_DIR))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
@@ -95,7 +98,7 @@ WSGI_APPLICATION = 'contactManagement.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DATA_DIR / 'db.sqlite3',
     }
 }
 
@@ -142,11 +145,11 @@ CACHES = {
     'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'},
     'weather': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': BASE_DIR / '.cache' / 'weather',
+        'LOCATION': DATA_DIR / '.cache' / 'weather',
         'OPTIONS': {'MAX_ENTRIES': 10000},
     },
 }
-WEATHER_LOCK_PATH = BASE_DIR / '.cache' / 'weather-api.lock'
+WEATHER_LOCK_PATH = DATA_DIR / '.cache' / 'weather-api.lock'
 WEATHER_USER_AGENT = os.getenv(
     'WEATHER_USER_AGENT', 'ContactManagement/1.0 (Django contact manager)',
 )

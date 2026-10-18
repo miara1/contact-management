@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    environment:
+      DJANGO_DATA_DIR: /app/data
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - contact_data:/app/data
+
+volumes:
+  contact_data:

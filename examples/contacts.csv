@@ -1,0 +1,10 @@
+﻿# Fictional sample contacts. Import this file using the Importuj CSV button.
+# Keep all six columns. Numbers without a country prefix use +48. Polish emergency numbers use no prefix.
+# In Excel keep phone_number as text and save as CSV UTF-8. Reimported duplicates are skipped.
+first_name;last_name;phone_number;email;city;status
+Anna;Kowalska;501111222;anna.kowalska@example.com;Wrocław;nowy
+Jan;Nowak;+48 502 222 333;jan.nowak@example.com;Warszawa;w trakcie
+Maria;Wiśniewska;0048503333444;maria.wisniewska@example.com;Kraków;zagubiony
+Piotr;Zieliński;504444555;piotr.zielinski@example.com;Gdańsk;nieaktualny
+Ewa;Wójcik;+44 20 7946 0018;ewa.wojcik@example.com;Wrocław;nowy
+Numer;Alarmowy;112;numer.alarmowy@example.com;Warszawa;nowy

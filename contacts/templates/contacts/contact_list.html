@@ -4,9 +4,9 @@
 {% block title %}Lista kontaktów | Kontakty{% endblock %}
 
 {% block content %}
-    <h1>Lista kontaktów</h1>
+    <h1 class="h3 fw-semibold mb-4">Lista kontaktów</h1>
 
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
         <a href="{% url 'contacts:contact_create' %}" class="btn btn-primary">Dodaj kontakt</a>
         <form method="post"
               action="{% url 'contacts:contact_import' %}"
@@ -16,27 +16,22 @@
             {% csrf_token %}
             <label for="{{ import_form.csv_file.id_for_label }}" class="visually-hidden">Plik CSV</label>
             {{ import_form.csv_file }}
-            <button type="submit" id="contact-import-button" class="btn btn-outline-primary">Importuj CSV</button>
+            <button type="submit" id="contact-import-button" class="btn btn-outline-secondary">Importuj CSV</button>
         </form>
-        <a href="{% url 'contacts:contact_csv_template' %}">Pobierz wzór CSV</a>
+        <a href="{% url 'contacts:contact_csv_template' %}" class="btn btn-link text-secondary">Pobierz wzór CSV</a>
+        <button type="button" class="btn btn-outline-secondary ms-auto"
+                data-bs-toggle="modal" data-bs-target="#contact-help">
+            <span aria-hidden="true">?</span> Pomoc
+        </button>
     </div>
 
-    <details class="mb-3">
-        <summary>Format pliku CSV</summary>
-        <p>Użyj UTF-8 i separatora średnik lub przecinek. Wszystkie pola są wymagane.</p>
-        <p>Nagłówki: <code>first_name;last_name;phone_number;email;city;status</code>. Kolejność kolumn jest dowolna.</p>
-        <p>Status: nowy, w trakcie, zagubiony lub nieaktualny.</p>
-        <p>Polskie numery alarmowe, np. 112 i 997, podaj bez prefiksu kraju. Dla pozostałych numerów bez prefiksu przyjmujemy +48.</p>
-        <p>W Excelu ustaw kolumnę telefonu jako tekst. Wiersze instrukcji zaczynające się od # mogą znajdować się przed nagłówkami.</p>
-        <p>Poprawne kontakty zostaną dodane. Wpisy niepełne, nieprawidłowe i duplikaty zostaną pominięte z opisem błędu. Istniejące kontakty pozostaną bez zmian.</p>
-    </details>
-
     {% if import_result %}
-        <section aria-labelledby="import-result-heading" class="mb-3">
-            <h2 id="import-result-heading" class="h5">Wynik importu</h2>
+        <section aria-labelledby="import-result-heading"
+                 class="alert {% if import_result.errors %}alert-warning{% else %}alert-success{% endif %} mb-4">
+            <h2 id="import-result-heading" class="h6 fw-semibold">Wynik importu</h2>
             <p>Zaimportowano: {{ import_result.imported_count }}. Pominięto: {{ import_result.skipped_count }}.</p>
             {% if import_result.errors %}
-                <ul>
+                <ul class="mb-0">
                     {% for error in import_result.errors %}
                         <li>Wiersz {{ error.row_number }}: {{ error.messages|join:'; ' }}</li>
                     {% endfor %}
@@ -45,89 +40,139 @@
         </section>
     {% endif %}
 
-    <form method="get" action="{% url 'contacts:contact_list' %}" class="mb-3">
-        <div class="row g-2 align-items-end">
-            <div class="col-md-5">
-                <label for="contact-search" class="form-label">Szukaj kontaktu</label>
-                <input type="search"
-                       id="contact-search"
-                       name="q"
-                       value="{{ search_query }}"
-                       placeholder="Imię, nazwisko, telefon lub email"
-                       class="form-control">
+    <div class="card shadow-sm">
+        <form method="get" action="{% url 'contacts:contact_list' %}" class="p-3 p-lg-4 border-bottom">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg">
+                    <label for="contact-search" class="form-label">Szukaj kontaktu</label>
+                    <input type="search"
+                           id="contact-search"
+                           name="q"
+                           value="{{ search_query }}"
+                           placeholder="Imię, nazwisko, telefon lub email"
+                           class="form-control">
+                </div>
+                <div class="col-md-8 col-lg-4">
+                    <label for="contact-sort" class="form-label">Sortowanie</label>
+                    <select id="contact-sort" name="sort" class="form-select">
+                        {% for value, label in sort_options.items %}
+                            <option value="{{ value }}"{% if value == selected_sort %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 col-lg-auto d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-outline-primary">Zastosuj</button>
+                    {% if search_query %}
+                        <a href="{% url 'contacts:contact_list' %}?sort={{ selected_sort|urlencode }}" class="btn btn-outline-secondary">Wyczyść</a>
+                    {% endif %}
+                </div>
             </div>
-            <div class="col-md-4">
-                <label for="contact-sort" class="form-label">Sortowanie</label>
-                <select id="contact-sort" name="sort" class="form-select">
-                    {% for value, label in sort_options.items %}
-                        <option value="{{ value }}"{% if value == selected_sort %} selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
+        </form>
+
+        {% if contacts %}
+            <p class="d-xl-none small text-body-secondary px-3 pt-3 mb-0">Przesuń tabelę w poziomie, aby zobaczyć wszystkie kolumny.</p>
+            <div class="table-responsive rounded-bottom" tabindex="0" role="region" aria-label="Tabela kontaktów">
+                <table class="table table-hover align-middle mb-0" aria-label="Lista kontaktów"
+                       data-weather-url="{% url 'contacts:contact_weather' %}">
+                    <thead class="table-light small">
+                        <tr>
+                            <th scope="col" class="ps-3 ps-lg-4 py-3 fw-semibold">Imię</th>
+                            <th scope="col" class="py-3 fw-semibold">Nazwisko</th>
+                            <th scope="col" class="py-3 fw-semibold text-nowrap">Numer telefonu</th>
+                            <th scope="col" class="py-3 fw-semibold">Adres email</th>
+                            <th scope="col" class="py-3 fw-semibold">Miasto</th>
+                            <th scope="col" class="py-3 fw-semibold">Pogoda</th>
+                            <th scope="col" class="py-3 fw-semibold">Status</th>
+                            <th scope="col" class="py-3 fw-semibold text-nowrap">Data dodania</th>
+                            <th scope="col" class="pe-3 pe-lg-4 py-3 fw-semibold text-end">Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contact in contacts %}
+                            <tr>
+                                <td class="ps-3 ps-lg-4 py-3">{{ contact.first_name }}</td>
+                                <td class="py-3 fw-medium">{{ contact.last_name }}</td>
+                                <td class="py-3 text-nowrap">{{ contact.phone_number }}</td>
+                                <td class="py-3">{{ contact.email }}</td>
+                                <td class="py-3">{{ contact.city }}</td>
+                                <td class="py-3" data-weather-city="{{ contact.city }}">
+                                    <div data-weather-values class="small text-nowrap"></div>
+                                    <div data-weather-status class="small text-secondary" role="status"></div>
+                                    <button type="button" data-weather-retry class="btn btn-link btn-sm p-0" hidden>Ponów pobieranie</button>
+                                    <noscript>Pogoda wymaga włączenia JavaScriptu.</noscript>
+                                </td>
+                                <td class="py-3">
+                                    <span class="badge rounded-pill fw-medium
+                                        {% if contact.status.name == 'new' %}bg-primary-subtle text-primary-emphasis
+                                        {% elif contact.status.name == 'in_progress' %}bg-warning-subtle text-warning-emphasis
+                                        {% elif contact.status.name == 'lost' %}bg-danger-subtle text-danger-emphasis
+                                        {% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">
+                                        {{ contact.status }}
+                                    </span>
+                                </td>
+                                <td class="py-3 text-nowrap text-body-secondary small">{{ contact.created_at|date:'d.m.Y' }}</td>
+                                <td class="pe-3 pe-lg-4 py-3">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{% url 'contacts:contact_update' contact.pk %}" class="btn btn-sm btn-outline-secondary"
+                                           aria-label="Edytuj kontakt {{ contact }}">Edytuj</a>
+                                        <a href="{% url 'contacts:contact_delete' contact.pk %}" class="btn btn-sm btn-outline-danger"
+                                           aria-label="Usuń kontakt {{ contact }}">Usuń</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <div class="col-md-3 d-flex flex-wrap gap-2">
-                <button type="submit" class="btn btn-primary">Zastosuj</button>
+        {% else %}
+            <div class="p-4 p-lg-5 text-center">
                 {% if search_query %}
-                    <a href="{% url 'contacts:contact_list' %}?sort={{ selected_sort|urlencode }}" class="btn btn-outline-secondary">Wyczyść</a>
+                    <h2 class="h5">Brak wyników</h2>
+                    <p class="text-body-secondary mb-0">Nie znaleziono kontaktów dla podanej frazy. Zmień wyszukiwanie lub wybierz „Wyczyść”.</p>
+                {% else %}
+                    <h2 class="h5">Twoja lista jest jeszcze pusta</h2>
+                    <p class="text-body-secondary mb-0">Dodaj pierwszy kontakt lub zaimportuj kontakty z pliku CSV.</p>
                 {% endif %}
             </div>
-        </div>
-    </form>
+        {% endif %}
+    </div>
 
     {% if contacts %}
-        <div class="table-responsive">
-            <table class="table align-middle" aria-label="Lista kontaktów"
-                   data-weather-url="{% url 'contacts:contact_weather' %}">
-                <thead>
-                    <tr>
-                        <th scope="col">Imię</th>
-                        <th scope="col">Nazwisko</th>
-                        <th scope="col">Numer telefonu</th>
-                        <th scope="col">Adres email</th>
-                        <th scope="col">Miasto</th>
-                        <th scope="col">Pogoda</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Data dodania</th>
-                        <th scope="col">Akcje</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for contact in contacts %}
-                        <tr>
-                            <td>{{ contact.first_name }}</td>
-                            <td>{{ contact.last_name }}</td>
-                            <td>{{ contact.phone_number }}</td>
-                            <td>{{ contact.email }}</td>
-                            <td>{{ contact.city }}</td>
-                            <td data-weather-city="{{ contact.city }}">
-                                <div data-weather-values class="small text-nowrap"></div>
-                                <div data-weather-status class="small text-secondary" role="status"></div>
-                                <button type="button" data-weather-retry class="btn btn-link btn-sm p-0" hidden>Ponów pobieranie</button>
-                                <noscript>Pogoda wymaga włączenia JavaScriptu.</noscript>
-                            </td>
-                            <td>{{ contact.status }}</td>
-                            <td>{{ contact.created_at|date:'d.m.Y' }}</td>
-                            <td>
-                                <div class="d-flex flex-column small lh-1">
-                                    <a href="{% url 'contacts:contact_update' contact.pk %}">Edytuj</a>
-                                    <a href="{% url 'contacts:contact_delete' contact.pk %}" class="text-danger">Usuń</a>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <p class="small text-secondary">
-            Pogoda: <a href="https://open-meteo.com/" rel="noreferrer">Open-Meteo</a>.
-            Lokalizacje: © <a href="https://www.openstreetmap.org/copyright" rel="noreferrer">OpenStreetMap contributors</a>.
+        <p class="small text-body-secondary mt-3 mb-0">
+            Pogoda: <a href="https://open-meteo.com/" class="link-secondary" rel="noreferrer">Open-Meteo</a>.
+            Lokalizacje: © <a href="https://www.openstreetmap.org/copyright" class="link-secondary" rel="noreferrer">OpenStreetMap contributors</a>.
         </p>
-    {% else %}
-        {% if search_query %}
-            <p>Nie znaleziono kontaktów dla podanej frazy.</p>
-        {% else %}
-            <p>Brak kontaktów do wyświetlenia.</p>
-        {% endif %}
     {% endif %}
+
+    <div class="modal fade" id="contact-help" tabindex="-1" aria-labelledby="contact-help-title" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="contact-help-title">Pomoc</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zamknij pomoc"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <h3 class="h6 fw-semibold">O aplikacji</h3>
+                    <p>Dodawaj, edytuj i usuwaj kontakty, wyszukuj je po imieniu, nazwisku, telefonie lub adresie email. Listę możesz sortować według nazwiska albo daty dodania.</p>
+                    <p>Przy każdym kontakcie znajdziesz temperaturę, wilgotność i prędkość wiatru dla jego miasta. Jeśli nie uda się pobrać pogody, skorzystaj z przycisku ponowienia.</p>
+
+                    <h3 class="h6 fw-semibold mt-4">Import i format pliku CSV</h3>
+                    <p>Wybierz „Importuj CSV”, aby dodać kontakty z pliku. Użyj kodowania UTF-8 oraz separatora średnik lub przecinek. Wszystkie pola są wymagane.</p>
+                    <p>Nagłówki (kolejność kolumn jest dowolna):<br><code class="text-break">first_name;last_name;phone_number;email;city;status</code></p>
+                    <ul class="mb-3">
+                        <li>Status: nowy, w trakcie, zagubiony lub nieaktualny.</li>
+                        <li>Dla numerów bez prefiksu kraju przyjmujemy +48. Numery zagraniczne podaj z + lub 00, a polskie numery alarmowe, np. 112 i 997, bez prefiksu.</li>
+                        <li>W Excelu ustaw kolumnę telefonu jako tekst i zapisz plik jako CSV UTF-8.</li>
+                        <li>Wiersze instrukcji zaczynające się od # mogą znajdować się przed nagłówkami.</li>
+                    </ul>
+                    <p class="mb-0">Poprawne kontakty zostaną dodane. Niepełne lub nieprawidłowe wpisy i duplikaty zostaną pominięte z opisem błędu. Istniejące kontakty pozostaną bez zmian.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zamknij</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block scripts %}

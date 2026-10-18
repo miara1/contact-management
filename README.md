@@ -1,7 +1,17 @@
 # Contact Management
 
-A Django application for managing contacts, importing CSV files, displaying city
-weather, and exposing a public REST API.
+A Django application for managing contacts through a web interface and a public
+REST API. It supports adding, editing, deleting, and searching contacts, sorting
+by last name or creation date, and importing CSV files with validation and a
+report of skipped rows.
+
+Each contact displays the temperature, humidity, and wind speed for their city.
+Coordinates come from OpenStreetMap Nominatim and weather data from Open-Meteo.
+Weather results are cached for 30 minutes to reduce API requests. When a provider
+is unavailable, previously fetched data can be displayed with a warning.
+
+The project also includes Docker Compose configuration with persistent storage
+and unit tests for phone number validation and weather request handling.
 
 ## Environment configuration
 

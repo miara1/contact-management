@@ -84,7 +84,7 @@ On macOS and Linux, use `python3` to create the environment if `python` is unava
    ```
 
 Open <http://localhost:8000/>. The API is available at
-<http://localhost:8000/api/contacts/>. Stop the server with `Ctrl+C`.
+<http://localhost:8000/api/contacts/>; see [API documentation](contacts/api/README.md). Stop the server with `Ctrl+C`.
 
 With the virtual environment activated, you can also create an administrator or
 run the unit tests:

@@ -72,6 +72,7 @@ if (weatherTable) {
         }
 
         const controller = new AbortController();
+        // Allow time for sequential geocoding and API retries within the whole batch.
         const timeout = setTimeout(() => controller.abort(), 90000);
         try {
             const response = await fetch(url, {signal: controller.signal, headers: {Accept: 'application/json'}});
@@ -118,7 +119,7 @@ if (weatherTable) {
         }
     }, 1000);
 
-    // Small sequential batches keep cold-cache geocoding within request timeouts.
+    // Fetch at most three cities per request to limit sequential geocoding time.
     async function loadInitialWeather() {
         const groups = [...cities.values()];
         for (let index = 0; index < groups.length; index += 3) {

@@ -60,7 +60,7 @@ class ContactListView(ListView):
         context['sort_options'] = self.sort_options
         context['selected_sort'] = self.get_sort()
         context['import_form'] = ContactImportForm()
-        # Consume the report once after redirecting, avoiding repeated POST uploads.
+        # Show the import report only once after redirecting.
         context['import_result'] = self.request.session.pop('contact_import_result', None)
         return context
 

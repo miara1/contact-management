@@ -173,7 +173,11 @@ def _error_result(key, error):
 
 
 def get_city_weather(cities):
-    """Return cached weather first; serialize cache misses across local workers."""
+    """Return weather results keyed by city, using cached data when available.
+
+    Error results include retry_after in seconds and may contain older weather
+    marked as stale.
+    """
     cache = caches['weather']
     results = {}
     pending = {}
@@ -188,7 +192,8 @@ def get_city_weather(cities):
         return results
 
     try:
-        # One shared lock also prevents duplicate requests for the same city.
+        # Share the lock across workers to avoid duplicate API requests.
+        # timeout=0 reports a busy fetch immediately, letting the UI offer a retry.
         with FileLock(settings.WEATHER_LOCK_PATH, timeout=0):
             locations = {}
             for city, key in pending.items():

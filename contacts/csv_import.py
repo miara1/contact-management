@@ -59,7 +59,8 @@ def _read_csv(uploaded_file):
 
 
 def import_contacts(uploaded_file):
-    # Parse the entire file before saving so broken CSV cannot cause a partial import.
+    """Import valid contacts and report skipped rows with their source line numbers."""
+    # Reject malformed CSV syntax before saving; validate contact data per row.
     headers, rows = _read_csv(uploaded_file)
     status_ids = {}
     for status in ContactStatus.objects.all():

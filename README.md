@@ -1,6 +1,6 @@
 # Contact Management
 
-**Polska wersja znajduje się poniżej:** [Wersja polska](#polska-wersja) · **[Instrukcja uruchomienia](#instrukcja-uruchomienia)**.
+**🇵🇱 Polska wersja znajduje się poniżej:** [Wersja polska](#polska-wersja) · **[Instrukcja uruchomienia](#instrukcja-uruchomienia)**.
 
 A Django contact manager with a web interface, a REST API, CSV import, and weather
 information for each contact's city.
@@ -222,7 +222,7 @@ docker compose down
 
 <a id="polska-wersja"></a>
 
-## Wersja polska
+## 🇵🇱 Wersja polska
 
 Aplikacja do zarządzania kontaktami stworzona w Django. Umożliwia wygodne zarządzanie kontaktami przez przeglądarkę, udostępnia REST API, obsługuje import danych z plików CSV oraz wyświetla aktualne informacje pogodowe dla miast przypisanych do kontaktów.
 
